@@ -28,7 +28,7 @@ public class AppCompilador extends JFrame implements ActionListener{
 	private JTextArea areaTexto;
 	private JList<String> tokens;
 	private JTabbedPane documentos,consola,tabla;
-	private String [] titulos ={"Tipo","Nombre","Valor"};
+	private String [] titulos ={"Tipo","Nombre","Valor","Alcance","Posicion"};
 	DefaultTableModel modelo = new DefaultTableModel(new Object[0][0],titulos);
 	private JTable mitabla = new JTable(modelo);
 	private JButton btnAnalizar;
@@ -109,10 +109,10 @@ public class AppCompilador extends JFrame implements ActionListener{
 				tokens.setListData(analisador.getmistokens().toArray( new String [0]));
 				modelo = new DefaultTableModel(new Object[0][0],titulos);
 				mitabla.setModel(modelo);
-				for (int i = analisador.getIdenti().size()-1; i >=0; i--) {
+				for (int i = 0;i<analisador.getIdenti().size(); i++) {
 					Identificador id = analisador.getIdenti().get(i);
 					if(!id.tipo.equals("")) {
-						Object datostabla[]= {id.tipo,id.nombre,id.valor};
+						Object datostabla[]= {id.tipo,id.nombre,id.valor,id.alcance,id.posicion};
 						modelo.addRow(datostabla);
 					}
 				}
