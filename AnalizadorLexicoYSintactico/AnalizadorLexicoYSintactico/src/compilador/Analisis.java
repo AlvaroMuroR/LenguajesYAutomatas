@@ -83,11 +83,15 @@ public class Analisis
 			case Token.CLASE:
 				// si lo anterior fue modificador
 				if (nodo.anterior!=null) 
-					if(nodo.anterior.dato.getTipo()==Token.MODIFICADOR) {
-						if(nodo.siguiente.dato.getTipo()!=Token.IDENTIFICADOR) 
-							impresion.add("Error sinatactico en la linea "+to.getLinea()+" se esparaba un identificador");
-					}else
-						impresion.add("Error sinatactico en la linea "+to.getLinea()+" se esperaba un modificador");
+					if(cuenta(nodo.siguiente.dato.getValor())>=1) {
+
+					}else {
+						if(nodo.anterior.dato.getTipo()==Token.MODIFICADOR) {
+							if(nodo.siguiente.dato.getTipo()!=Token.IDENTIFICADOR) 
+								impresion.add("Error sinatactico en la linea "+to.getLinea()+" se esparaba un identificador");
+						}else
+							impresion.add("Error sinatactico en la linea "+to.getLinea()+" se esperaba un modificador");
+					}
 				break;
 			case Token.SIMBOLO:
 				// Verificar que el mismo numero de parentesis y llaves que abren sean lo mismo que los que cierran
@@ -122,8 +126,18 @@ public class Analisis
 							if(nodo.anterior.anterior.dato.getTipo()==Token.TIPO_DATO)
 								identi.add(new Identificador(nodo.anterior.dato.getValor(),nodo.siguiente.dato.getValor(),nodo.anterior.anterior.dato.getValor(),"Local",nodo.dato.getLinea()));
 							else
-								impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba un tipo de dato");
+								//Si el valor se repite
+								if(cuenta(nodo.anterior.dato.getValor())>=2){
 
+
+								}else {
+									//Si no encuentra una variable declarada
+									if(cuenta(nodo.anterior.dato.getValor())<2) {
+										impresion.add("Error sinatactico en linea "+to.getLinea()+ " variable no declarada");
+									}else {
+										impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba un tipo de dato");
+									}
+								}
 						}
 					}else
 						impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba un identificador");
@@ -163,6 +177,19 @@ public class Analisis
 					impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba una constante");
 				if(nodo.siguiente.dato.getTipo()!=Token.CONSTANTE)
 					impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba una constante");
+				break;
+
+			case Token.OPERADOR_ARITMETICO:
+				if(nodo.anterior.dato.getTipo()!=Token.CONSTANTE) 
+					impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba una constante");
+				if(nodo.siguiente.dato.getTipo()!=Token.CONSTANTE)
+					impresion.add("Error sinatactico en linea "+to.getLinea()+ " se esperaba una constante");
+
+				String aux1="", aux2="";
+				aux1=TipoDato(nodo.anterior.dato.getValor());
+				aux2=TipoDato(nodo.siguiente.dato.getValor());
+				if(!aux1.equals(aux2))
+					impresion.add("No se puede pude realizar la operacion en la linea "+to.getLinea());
 				break;
 			}
 
@@ -215,7 +242,7 @@ public class Analisis
 		if(nodo!=null) // si no llego al ultimo de la lista
 		{
 			to =  nodo.dato;
-
+			//Recorrido de la tabla de simbolos
 			for(int i=0;i<identi.size();i++) {
 				int cont=0;
 				boolean repetido = false;
@@ -311,9 +338,9 @@ public class Analisis
 	}
 
 	public static boolean isBoolean(String cadena) {
-
-		if(cadena == "true" || cadena == "false") 
+		if(cadena.equals("true") || cadena.equals("false")) {
 			return true;
+		}
 		return false;
 
 	}
@@ -351,6 +378,18 @@ public class Analisis
 		}	
 		return conta;
 	}
+	//Metodo para saber el tipo de dato
+	public String TipoDato(String aux) {
+		if(Pattern.matches("[0-9]+", aux))
+			return "int";
+		if(Pattern.matches("[0-9]+.[0-9]", aux))
+			return "float";
+		if(Pattern.matches("true+", aux))
+			return "boolean";
+
+		return "";
+
+	}
 
 
 
@@ -359,14 +398,7 @@ public class Analisis
 		return impresion;
 	}
 
-	/*if(to.getValor().equals(";")) 
-	{
-		if(nodo.anterior.anterior.anterior.anterior.dato.getTipo()==Token.TIPO_DATO&&nodo.anterior.anterior.anterior.dato.getTipo()==Token.IDENTIFICADOR&&nodo.anterior.anterior.dato.getValor().contains("=")&&nodo.anterior.dato.getTipo()==Token.CONSTANTE)
-		identi.add(new Identificador(nodo.anterior.dato.getValor(),nodo.siguiente.dato.getValor(),nodo.anterior.anterior.dato.getValor(),"Local",nodo.dato.getLinea()));
-
-
-	}
-	 */
+	
 
 
 }
