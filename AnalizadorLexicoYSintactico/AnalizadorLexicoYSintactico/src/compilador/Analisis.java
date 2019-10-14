@@ -75,7 +75,7 @@ public class Analisis
 				else
 					if(nodo.anterior.dato.getValor().equals("class")) // se encontro la declaracion de la clase
 					{
-						identi.add( new Identificador(to.getValor(), " ", "class","Local",nodo.dato.getLinea()));
+						identi.add( new Identificador(to.getValor(), " ", "class","Global",nodo.dato.getLinea()));
 					}
 				break;
 				// Estos dos entran en el mismo caso
@@ -124,7 +124,7 @@ public class Analisis
 							impresion.add("Error sinatactico en la linea "+to.getLinea()+ " se esperaba una constante");
 						else {
 							if(nodo.anterior.anterior.dato.getTipo()==Token.TIPO_DATO)
-								identi.add(new Identificador(nodo.anterior.dato.getValor(),nodo.siguiente.dato.getValor(),nodo.anterior.anterior.dato.getValor(),"Local",nodo.dato.getLinea()));
+								identi.add(new Identificador(nodo.anterior.dato.getValor(),nodo.siguiente.dato.getValor(),nodo.anterior.anterior.dato.getValor(),"Global",nodo.dato.getLinea()));
 							else
 								//Si el valor se repite
 								if(cuenta(nodo.anterior.dato.getValor())>=2){
