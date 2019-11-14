@@ -1,7 +1,10 @@
 package compilador;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -14,6 +17,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
+import java.util.regex.Pattern;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -26,12 +30,17 @@ public class AppCompilador extends JFrame implements ActionListener{
 	private JFileChooser ventanaArchivos;
 	private File archivo;
 	private JTextArea areaTexto;
+	private JScrollPane barrita; 
 	private JList<String> tokens;
-	private JTabbedPane documentos,consola,tabla;
-	private String [] titulos ={"Tipo","Nombre","Valor","Alcance","Posicion"};
+	private JTabbedPane documentos,consola,tabla,tabla2;
+	private String [] titulos ={"Tipo","Nombre","Valor","Alcance","Renglon"};
 	DefaultTableModel modelo = new DefaultTableModel(new Object[0][0],titulos);
-	private JTable mitabla = new JTable(modelo);
+	private String [] titulos2 ={"Operador","arg 1","arg 2","Resultado"};
+	DefaultTableModel modelo2 = new DefaultTableModel(new Object[0][0],titulos2);
+	public JTable mitabla = new JTable(modelo);
+	public JTable mitabla2 = new JTable(modelo2);
 	private JButton btnAnalizar;
+
 	public static void main(String[] args) {
 		/*try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
@@ -42,9 +51,11 @@ public class AppCompilador extends JFrame implements ActionListener{
 	public AppCompilador() {
 		super("Analizador Lexico y Sintáctico");
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		
-		setLayout(new GridLayout(2,2));
-		setSize(600,450);
+
+		setLayout(new GridLayout(3,2));
+		//mitabla.setBackground(new Color(255,45,0));
+		setSize(1000,550);
+		setResizable(false);
 		setLocationRelativeTo(null);
 		creaInterFaz();
 		setVisible(true);
@@ -54,8 +65,6 @@ public class AppCompilador extends JFrame implements ActionListener{
 		setJMenuBar(barraMenu);
 		menuArchivo = new JMenu("Archivo");
 		menuArchivo.setIcon(new ImageIcon("archivo.png"));
-		//MenuAnalisis =  new JMenu("Analisis");
-		//MenuAnalisis.setIcon(new ImageIcon("analisis.png"));
 		ventanaArchivos = new JFileChooser();
 		itemNuevo = new JMenuItem("Nuevo");
 		itemAbrir = new JMenuItem("Abrir...");
@@ -70,35 +79,45 @@ public class AppCompilador extends JFrame implements ActionListener{
 		btnAnalizar = new JButton("ANALIZAR");
 		btnAnalizar.setFont(new Font("Dialog",Font.PLAIN,40));
 		btnAnalizar.addActionListener(this);
-		
-		
+
+
 		ventanaArchivos = new JFileChooser();
 		menuArchivo.add(itemNuevo);
 		menuArchivo.add(itemAbrir);
 		menuArchivo.add(itemGuardar);
 		menuArchivo.addSeparator();
 		menuArchivo.add(itemSalir);
-		//MenuAnalisis.add(itemAnalisLexico);
+		
 		barraMenu.add(menuArchivo);
-		//barraMenu.add(MenuAnalisis);
 		areaTexto = new JTextArea();
 		ventanaArchivos= new JFileChooser("Guardar");
 		areaTexto.setFont(new Font("Consolas", Font.PLAIN, 12));
+		barrita = new JScrollPane(areaTexto);
+		barrita.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		barrita.setPreferredSize(new Dimension(870, 65));
+
+
 		documentos = new JTabbedPane();
 		consola = new JTabbedPane();
 		tabla = new JTabbedPane();
-		documentos.addTab("Nuevo", new JScrollPane(areaTexto));
+		tabla2 = new JTabbedPane();
+
+		documentos.addTab("Nuevo",barrita);
 		documentos.setToolTipText("Aqui se muestra el codigo");
 		add(documentos);
 		tokens=new JList<String>();
 		consola.addTab("Consola",new JScrollPane(tokens));
 		//consola.addTab("Tabla",new JScrollPane(mitabla));
 		tabla.addTab("Tabla de simbolos",new JScrollPane(mitabla) );
+		tabla2.addTab("Tabla de Cuadruplos",new JScrollPane(mitabla2) );
 		add(consola);
 		consola.setToolTipText("Aqui se muestra el resultado del analisis");
+		add(tabla2);
 		add(btnAnalizar);
 		add(tabla);
-		//documentos.add("Analizar", btnAnalizar);
+		
+		
+
 
 	}
 	@Override
@@ -108,17 +127,31 @@ public class AppCompilador extends JFrame implements ActionListener{
 				Analisis analisador = new Analisis(archivo.getAbsolutePath());
 				tokens.setListData(analisador.getmistokens().toArray( new String [0]));
 				modelo = new DefaultTableModel(new Object[0][0],titulos);
-				mitabla.setModel(modelo);
-				for (int i = 0;i<analisador.getIdenti().size(); i++) {
-					Identificador id = analisador.getIdenti().get(i);
+				modelo2 = new DefaultTableModel(new Object[0][0],titulos2);
+
+
+				for (int i=0; i < analisador.getIdenti().size(); i++) {
+					Identificador id = analisador.getIdenti().get(i);						
+					mitabla.setModel(modelo);
 					if(!id.tipo.equals("")) {
 						Object datostabla[]= {id.tipo,id.nombre,id.valor,id.alcance,id.posicion};
+
 						modelo.addRow(datostabla);
 					}
 				}
 
+
+				for (int i=0; i < analisador.getIdenti2().size(); i++) {
+					Arbol id2 =analisador.getIdenti2().get(i);								
+					mitabla2.setModel(modelo2);
+					Object datostabla2[]= {id2.operador,id2.arg1,id2.arg2,id2.resultado};
+
+					modelo2.addRow(datostabla2);
+
+				}
+
 			}
-		
+
 			return;
 		}
 		if (e.getSource()==itemSalir) {
@@ -182,4 +215,7 @@ public class AppCompilador extends JFrame implements ActionListener{
 			return false;
 		}
 	}
+
+
+
 }
