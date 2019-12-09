@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
+
+import com.sun.xml.internal.bind.v2.runtime.Name;
 public class Analisis
 {
 	int renglon=1;
@@ -129,7 +131,29 @@ public class Analisis
 							expresion.add(aux2);
 							nodoaux = nodoaux.siguiente;
 						}
-
+						
+						//Declaracion de Variables en Ensamblador
+						System.out.println("        TITLE Ejemplo\r\n" + 
+								"        \r\n" + 
+								"        .MODEL  SMALL\r\n" + 
+								"        .486\r\n" + 
+								"        .STACK \r\n" + 
+								"        \r\n" + 
+								"        .DATA");
+						System.out.println("temporal1\t"+"DB\t"+"0");
+						System.out.println("temporal2\t"+"DB\t"+"0");
+						System.out.println("temporal3\t"+"DB\t"+"0");
+						System.out.println("temporal4\t"+"DB\t"+"0");
+						System.out.println("temporal5\t"+"DB\t"+"0");
+						System.out.println("x\t"+"DB\t"+"0");
+						
+						
+						System.out.println(".CODE\r\n" + 
+								"MAIN   PROC    FAR\r\n" + 
+								"       .STARTUP");
+						System.out.println();
+						System.out.println();
+						
 
 						ArrayList<String> expresion2 = new ArrayList<String>(expresion);
 						int Resultado=0;
@@ -167,8 +191,10 @@ public class Analisis
 											}
 											//Multiplicacion
 											if (expresion.get(j).contains("*")){
+												
 												Resultado =  multiplicar(expresion.get(j-1), expresion.get(j+1));
 												expresion2.set(j,"temporal"+contador);
+												
 												arbol.add(new Arbol("*",expresion2.get(j-1),expresion2.get(j+1),expresion2.get(j)));
 												expresion2.remove(j+1);
 												expresion2.remove(j-1);
@@ -227,6 +253,12 @@ public class Analisis
 								Resultado =  dividir(expresion.get(i-1), expresion.get(i+1));
 								expresion2.set(i,"temporal"+contador);
 								arbol.add(new Arbol("/",expresion2.get(i-1),expresion2.get(i+1),expresion2.get(i)));
+								System.out.println("MOV AL, "+expresion2.get(i-1));
+								System.out.println("MOV BL, "+expresion2.get(i+1));
+								System.out.println("DIV BL");
+								System.out.println("MOV temporal"+contador+", AL");
+								System.out.println(";temporal"+contador+"= "+Resultado);
+								System.out.println();
 								expresion2.remove(i+1);
 								expresion2.remove(i-1);
 
@@ -241,9 +273,16 @@ public class Analisis
 									Resultado =  multiplicar(expresion.get(i-1), expresion.get(i+1));
 									expresion2.set(i,"temporal"+contador);
 									arbol.add(new Arbol("*",expresion2.get(i-1),expresion2.get(i+1),expresion2.get(i)));
+									System.out.println("MOV AL, "+expresion2.get(i-1));
+									System.out.println("MOV BL, "+expresion2.get(i+1));
+									System.out.println("MUL BL");
+									System.out.println("MOV temporal"+contador+", AL");
+									System.out.println(";temporal"+contador+"= "+Resultado);
+									System.out.println();
 									expresion2.remove(i+1);
 									expresion2.remove(i-1);
 									expresion.set(i-1,Resultado+"" );
+									System.out.println();
 									expresion.remove(i);
 									expresion.remove(i);
 									i--;
@@ -260,6 +299,12 @@ public class Analisis
 									Resultado =  sumar(expresion.get(i-1), expresion.get(i+1));
 									expresion2.set(i,"temporal"+contador);
 									arbol.add(new Arbol("+",expresion2.get(i-1),expresion2.get(i+1),expresion2.get(i)));
+									System.out.println("MOV AL, "+expresion2.get(i-1));
+									System.out.println("MOV AH, "+expresion2.get(i+1));
+									System.out.println("ADD AL, AH");
+									System.out.println("MOV temporal"+contador+", AL");
+									System.out.println(";temporal"+contador+"= "+Resultado);
+									System.out.println();
 									expresion2.remove(i+1);
 									expresion2.remove(i-1);
 									expresion.set(i-1,Resultado+"" );
@@ -274,6 +319,12 @@ public class Analisis
 										Resultado =  restar(expresion.get(i-1), expresion.get(i+1));
 										expresion2.set(i,"temporal"+contador);
 										arbol.add(new Arbol("-",expresion2.get(i-1),expresion2.get(i+1),expresion2.get(i)));
+										System.out.println("MOV AL, "+expresion2.get(i-1));
+										System.out.println("MOV AH, "+expresion2.get(i+1));
+										System.out.println("SUB AL, AH");
+										System.out.println("MOV temporal"+contador+", AL");
+										System.out.println(";temporal"+contador+"= "+Resultado);
+										System.out.println();
 										expresion2.remove(i+1);
 										expresion2.remove(i-1);
 
@@ -288,7 +339,8 @@ public class Analisis
 						}
 
 						int Tipo, nombre;
-						String auxTipo ="", auxNombre = "";
+						String auxTipo ="";
+						String varNombre = "";
 						while(nodoaux2!=null){
 							Tipo = nodoaux2.anterior.dato.getTipo();
 							if(Tipo==2 ){
@@ -301,16 +353,33 @@ public class Analisis
 						while(nodoaux3!=null){
 							nombre = nodoaux3.anterior.dato.getTipo();
 							if(nombre==7){
-								auxNombre = nodoaux3.anterior.dato.getValor();
+								varNombre = nodoaux3.anterior.dato.getValor();
 								break;
 							}
 							nodoaux3 = nodoaux3.anterior;
 						}
-						arbol.add(new Arbol("=",expresion2.get(0)," ",auxNombre));
-						identi.add(new Identificador(auxNombre,Resultado+"",auxTipo,"Global",to.getLinea()));
+						
+						
+						arbol.add(new Arbol("=",expresion2.get(0)," ",varNombre));
+						identi.add(new Identificador(varNombre,Resultado+"",auxTipo,"Global",to.getLinea()));
+						System.out.println("MOV AL, temporal"+(contador-1));
+						System.out.println("MOV "+varNombre+", AL");
+						System.out.println(";"+varNombre+"= "+Resultado);
+						System.out.println("MOV BX, 0001H\r\n" + 
+								"    ADD "+varNombre+",30H\r\n" + 
+								"    MOV DL, "+varNombre+"\r\n" + 
+								"    MOV AH, 02H\r\n" + 
+								"    INT 21H");
+						System.out.println(" .EXIT\r\n" + 
+								"      \r\n" + 
+								"MAIN ENDP\r\n" + 
+								"     END    ");
 						expresion.remove(0);
 						expresion2.remove(0);
 					}
+					
+					
+					
 
 					else if (nodo.anterior.anterior.anterior.dato.getTipo()==Token.IDENTIFICADOR
 							&&nodo.anterior.anterior.dato.getTipo()==Token.SIMBOLO
